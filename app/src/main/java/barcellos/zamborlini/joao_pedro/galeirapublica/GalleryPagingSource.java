@@ -9,6 +9,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import java.io.FileNotFoundException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
@@ -50,9 +52,20 @@ public class GalleryPagingSource extends ListenableFuturePagingSource<Integer, I
         Integer finalNextPageNumber = nextPageNumber;
         ListenableFuture<LoadResult<Integer, ImageData>> lf = service.submit(new Callable<LoadResult<Integer, ImageData>>() {
             @Override
-            public LoadResult<Integer, ImageData> call() throws Exception {
-                return null;
+            public LoadResult<Integer, ImageData> call(){
+                List<ImageData> imageDataList = null;
+                try{
+                    imageDataList = galleryRepository.loadImageData(loadParams.getLoadSize(), finalOffset);
+                    Integer nextKey = null;
+                    if (imageDataList.size() >= loadParams.getLoadSize()){
+                        nextKey = finalNextPageNumber + 1;
+                    }
+                    return new LoadResult.Page<Integer, ImageData>(imageDataList, null, nextKey);
+                } catch (FileNotFoundException e){
+                    return new LoadResult.Error<>(e);
+                }
             }
-        })
+        });
+        return lf;
     }
 }

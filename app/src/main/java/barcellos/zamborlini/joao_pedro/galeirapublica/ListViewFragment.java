@@ -2,7 +2,15 @@ package barcellos.zamborlini.joao_pedro.galeirapublica;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagingData;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +27,9 @@ public class ListViewFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    private MainViewModel mViewModel;
+    private View view;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -46,6 +57,10 @@ public class ListViewFragment extends Fragment {
         return fragment;
     }
 
+    public static ListViewFragment newInstance(){
+        return new ListViewFragment();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +73,24 @@ public class ListViewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_list_view, container, false);
+        view = inflater.inflate(R.layout.fragment_list_view, container, false);
+        return view;
+    }
+
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
+        super.onViewCreated(view, savedInstanceState);
+        mViewModel = new ViewModelProvider(getActivity()).get(MainViewModel.class);
+        ListAdapter listAdapter = new ListAdapter(new ImageDataComparator());
+        LiveData<PagingData<ImageData>> liveData = mViewModel.getPageLv();
+        liveData.observe(getViewLifecycleOwner(), new Observer<PagingData<ImageData>>() {
+            @Override
+            public void onChanged(PagingData<ImageData> objectPagingData){
+                listAdapter.submitData(getViewLifecycleOwner().getLifecycle(), objectPagingData);
+            }
+        });
+
+        RecyclerView rvGallery = (RecyclerView) view.findViewById(R.id.rvList);
+        rvGallery.setAdapter(listAdapter);
+        rvGallery.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 }
