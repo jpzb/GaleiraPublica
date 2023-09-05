@@ -29,6 +29,7 @@ public class MainViewModel extends AndroidViewModel {
         pageLv = PagingLiveData.cachedIn(PagingLiveData.getLiveData(pager), viewModelScope);
     }
 
+
     public int getNavigationOpSelected(){
         return navigationOpSelected;
     }
@@ -37,4 +38,7 @@ public class MainViewModel extends AndroidViewModel {
         this.navigationOpSelected = navigationOpSelected;
     }
 
+    public LiveData<PagingData<ImageData>> getPageLv() {
+        return pageLv;
+    }
 }
